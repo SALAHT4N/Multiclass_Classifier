@@ -1,13 +1,28 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="bg-base-300">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <title>Vite App</title>
   </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+  <body class="h-screen p-6 bg-base-300">
+    <div class="h-full">
+      <div class="flex gap-x-4 flex-row h-full w-full">
+        <div class="grid flex-1 place-items-center">
+          <div id="maze-container" class="grid gap-3">
+            <div class="card-body"></div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2 w-64 bg-base-100 rounded-box p-4">
+          <div class="mt-auto">
+            <button id="start-button" class="btn btn-primary text-lg w-full">
+              Start
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="./src/main.ts" type="module"></script>
   </body>
 </html>
