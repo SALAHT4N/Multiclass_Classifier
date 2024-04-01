@@ -10,31 +10,47 @@ type Neuron = {
 };
 
 type Layer = {
-  addNeuron(neuron: Neuron): Layer;
+  addNeuron(): Layer;
   neurons: Neuron[];
+  weightMatrix: number[][];
+  inputs: number[];
+  activationFunction(net: number): number;
 };
 
 type Network = {
-  addLayer(layer: Layer): Network;
+  withLayer(layer: Layer): Network;
+  train(): void;
+  init(): void;
   layers: Layer[];
 };
 
 function createNetwork(): Network {
   return {
     layers: [],
-    addLayer(layer: Layer) {
+    withLayer(layer: Layer) {
       this.layers.push(layer);
       return this;
+    },
+    init(): void {
+      this.layers.forEach((layer) => layer); // initialize weight matrices and inputs
+    },
+    train() {
+      train();
     },
   };
 }
 
-function createLayer(): Layer {
+function createLayer(type: NeuronType): Layer {
   return {
     neurons: [],
-    addNeuron(neuron): Layer {
-      this.neurons.push(neuron);
+    addNeuron(): Layer {
+      this.neurons.push(createNeuron(type));
       return this;
+    },
+    weightMatrix: [[]],
+    inputs: [],
+    activationFunction(net: number): number {
+      return net; // linear function
     },
   };
 }
@@ -45,20 +61,19 @@ function createNeuron(type: NeuronType): Neuron {
   };
 }
 
-function buildNetwork(): void {
-  let layer = createLayer()
-    .addNeuron(createNeuron("Hidden"))
-    .addNeuron(createNeuron("Hidden"))
-    .addNeuron(createNeuron("Hidden"))
-    .addNeuron(createNeuron("Input"))
-    .addNeuron(createNeuron("Input"))
-    .addNeuron(createNeuron("Output"))
-    .addNeuron(createNeuron("Output"))
-    .addNeuron(createNeuron("Output"))
-    .addNeuron(createNeuron("Output"));
+function buildNetwork(): Network {
+  const inputLayer = createLayer("Input").addNeuron().addNeuron();
+  const hiddenLayer = createLayer("Hidden").addNeuron().addNeuron().addNeuron();
+  const outputLayer = createLayer("Output")
+    .addNeuron()
+    .addNeuron()
+    .addNeuron()
+    .addNeuron();
 
-  let network = createNetwork();
-  network.addLayer(layer);
+  return createNetwork()
+    .withLayer(inputLayer)
+    .withLayer(hiddenLayer)
+    .withLayer(outputLayer);
 }
 
 function captureDataset(): void {
@@ -91,7 +106,9 @@ function init(): void {
 }
 
 init();
-buildNetwork();
+const network = buildNetwork();
+network.init();
 captureDataset();
-train();
+network.train = train;
+network.train();
 classify();
