@@ -1,15 +1,20 @@
-import { Layer } from "./Layer";
+import { HiddenLayer, OutputLayer } from "./Layer";
 import { Network } from "./Network";
 
 export class NetworkBuilder {
   private _network = new Network();
+
+  public setNumberOfFeatures(inputs: number): NetworkBuilder {
+    this._network.numberOfFeatures = inputs;
+    return this;
+  }
 
   public addHiddenLayer(
     activationFunction: (x: number) => number,
     numOfNeurons: number
   ): NetworkBuilder {
     for (let i = 0; i < numOfNeurons; i++) {
-      this._network.hiddenLayers.push(new Layer(activationFunction, "hidden"));
+      this._network.hiddenLayers.push(new HiddenLayer(activationFunction));
     }
 
     return this;
@@ -19,24 +24,13 @@ export class NetworkBuilder {
     activationFunction: (x: number) => number,
     numOfNeurons: number
   ): NetworkBuilder {
-    let layer = new Layer(activationFunction, "output");
+    let layer = new OutputLayer(activationFunction);
 
     for (let i = 0; i < numOfNeurons; i++) {
       layer.addNeuron();
     }
 
     this._network.outputLayer = layer;
-    return this;
-  }
-
-  public setInputLayer(numOfNeurons: number): NetworkBuilder {
-    let layer = new Layer((x) => x, "input");
-
-    for (let i = 0; i < numOfNeurons; i++) {
-      layer.addNeuron();
-    }
-
-    this._network.inputLayer = layer;
     return this;
   }
 

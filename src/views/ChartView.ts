@@ -15,6 +15,13 @@ Chart.register(LinearScale);
 Chart.register(...registerables);
 Chart.register(zoomPlugin);
 
+const groupColors = [
+  "rgba(255, 99, 132, 1)",
+  "rgba(20, 99, 132, 1)",
+  "rgba(5, 200, 132, 1)",
+  "rgba(10, 109, 3, 1)",
+];
+
 export class ChartView {
   _parentElement = document.querySelector("#chart-container");
   _canvas = document.querySelector("#chart") as HTMLCanvasElement;
@@ -24,6 +31,16 @@ export class ChartView {
   constructor() {
     this._initChart();
   }
+
+  public addDataset(label: string) {
+    this._chart?.data.datasets.push({
+      label: label,
+      data: [],
+      backgroundColor: groupColors[this._chart.data.datasets.length],
+    });
+    this._chart?.update();
+  }
+
   _initChart(): void {
     const config = {
       type: "scatter" as const,
@@ -32,22 +49,12 @@ export class ChartView {
           {
             label: "Group 1",
             data: [],
-            backgroundColor: "rgba(255, 99, 132, 1)",
+            backgroundColor: groupColors[0],
           },
           {
             label: "Group 2",
             data: [],
-            backgroundColor: "rgba(20, 99, 132, 1)",
-          },
-          {
-            label: "Group 3",
-            data: [],
-            backgroundColor: "rgba(5, 200, 132, 1)",
-          },
-          {
-            label: "Group 4",
-            data: [],
-            backgroundColor: "rgba(10, 109, 3, 1)",
+            backgroundColor: groupColors[1],
           },
         ],
       },
@@ -119,7 +126,7 @@ export class ChartView {
     });
   }
 
-  updateChart = (point: Point): void => {
+  addPoint = (point: Point): void => {
     this._chart?.data.datasets
       .find((ds) => ds.label === point.group)
       ?.data.push([point.x, point.y]);

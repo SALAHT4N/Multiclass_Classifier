@@ -3,43 +3,55 @@ import { ChartView } from "./views/ChartView";
 import state from "./models/State";
 import { Point } from "./models/Point";
 import { Network } from "./models/Network";
-import { Layer } from "./models/Layer";
 
 const chart: ChartView = new ChartView();
 
 function onClickChartHandler(point: Point) {
   point.group = state.currentSelectedGroup;
-  state.chartState.addPoint(point);
+  state.dataModel.addPoint(point);
 }
 
+/**
+ * This method constructs the neural network used to classify dataset
+ * @returns Constructed Neural Network
+ */
 function buildNetwork(): Network {
   return Network.getBuilder()
-    .setInputLayer(2)
+    .setNumberOfFeatures(2)
     .setOutputLayer((x) => x, 4)
     .addHiddenLayer((x) => x, 3)
     .build();
 }
 
-function captureDataset(): void {
-  // update data in model to reflect the dataset input by the user
+/**
+ * This method formats the points to input samples
+ * @returns Input samples for neural network
+ */
+function formatDataset(): number[][] {
+  const ACTIVE_OUTPUT = 1;
+  const INACTIVE_OUTPUT = 0;
+
+  const formattedDataset = state.dataModel.getPoints().map((point) => {
+    const sample = [point.x, point.y];
+
+    state.dataModel.getGroups().forEach(() => sample.push(0));
+    const groups = state.dataModel.getGroups();
+
+    for (let group of groups) {
+      if (point.group === group) {
+        sample.push(ACTIVE_OUTPUT);
+      } else {
+        sample.push(INACTIVE_OUTPUT);
+      }
+    }
+
+    return sample;
+  });
+
+  return formattedDataset;
 }
 
-function train(): void {
-  // 1. iterate through the dataset line by line
-  // 2. activate layers, layer by layer starting from input to output
-  /**
-   * Input neuron activations are just the input themselves
-   * Hidden neurons activations are the weighted sum plugged into an activation function
-   * Output neurons same as hidden ones
-   */
-  // 3.calculate the error and start back propagating
-  /**
-   * Output neurons error calculation is the difference between actual and desired outputs
-   * Hidden neurons error calculation is the effect on further layers
-   * Input layer, no back propagation
-   */
-  // 4. update old weights and thresholds to the new calculated values
-}
+function train(): void {}
 
 function classify(): void {
   // try points to determine their output values
@@ -47,18 +59,17 @@ function classify(): void {
 
 function init(): void {
   chart.addOnClickEventListener(onClickChartHandler);
-  state.chartState.addListener(chart.updateChart);
+  state.dataModel.addListener(chart.addPoint);
 }
 
 init();
 
 const network = buildNetwork();
-
 network.initialize();
 
-captureDataset();
+const dataset = formatDataset();
 
-network.train([[]], (dataset, outputLayer, hiddenLayers) =>
+network.train(dataset, (dataset, outputLayer, hiddenLayers) =>
   console.log(dataset)
 );
 

@@ -6,17 +6,6 @@ export interface Neuron {
   activate(): number;
 }
 
-export class InputNeuron implements Neuron {
-  input: number;
-
-  constructor(input: number) {
-    this.input = input;
-  }
-  activate(): number {
-    return this.input;
-  }
-}
-
 abstract class ComputationalNeuron implements Neuron {
   inputs: number[];
   weights: number[];

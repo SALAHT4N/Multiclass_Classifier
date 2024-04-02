@@ -1,19 +1,28 @@
-import { Layer } from "./Layer";
+import { generateRandomValue } from "../utilities";
+import { HiddenLayer, OutputLayer } from "./Layer";
 import { NetworkBuilder } from "./NetworkBuilder";
 
 export type TrainingAlgorithm = (
   dataset: number[][],
-  outputLayer: Layer,
-  hiddenLayers: Layer[]
+  outputLayer: OutputLayer,
+  hiddenLayers: HiddenLayer[]
 ) => void;
 
 export class Network {
-  hiddenLayers: Layer[] = [];
-  inputLayer: Layer | null = null;
-  outputLayer: Layer | null = null;
+  hiddenLayers: HiddenLayer[] = [];
+  outputLayer: OutputLayer | null = null;
+  numberOfFeatures = 2;
 
   public initialize(): void {
-    // initialize weights and thresholds
+    const lowerBound = 0;
+    const upperBound = 0;
+
+    // TODO: finished initializeing
+    this.hiddenLayers.forEach((layer) => {
+      layer.weightMatrix.forEach((weightVector) => {
+        weightVector.fill(generateRandomValue(lowerBound, upperBound));
+      });
+    });
   }
 
   public train(

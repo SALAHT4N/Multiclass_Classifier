@@ -1,38 +1,55 @@
-import { HiddenNeuron, InputNeuron, Neuron, OutputNeuron } from "./Neuron";
+import { HiddenNeuron, Neuron, OutputNeuron } from "./Neuron";
 
-type NeuronType = "input" | "hidden" | "output";
-
-export class Layer {
+abstract class Layer {
+  neurons: Neuron[] = [];
   activationFunction: (input: number) => number;
   weightMatrix: number[][] = [[]];
   thresholds: number[] = [];
   inputs: number[] = [];
-  neurons: Neuron[] = [];
-  type: NeuronType;
 
-  constructor(activationFunction: (input: number) => number, type: NeuronType) {
+  constructor(activationFunction: (input: number) => number) {
     this.activationFunction = activationFunction;
-    this.type = type;
   }
 
-  addNeuron(): Layer {
-    let neuron: Neuron;
+  public abstract addNeuron(): Layer;
+}
 
-    if (this.type === "input") {
-      neuron = new InputNeuron(this.inputs[this.neurons.length]);
-    } else if (this.type === "hidden") {
+export class HiddenLayer extends Layer {
+  constructor(activationFunction: (input: number) => number) {
+    super(activationFunction);
+  }
+
+  public addNeuron(): Layer {
+    {
+      let neuron: Neuron;
+
       neuron = new HiddenNeuron(
         this.weightMatrix[this.neurons.length],
         this.inputs
       );
-    } else {
+
+      this.neurons.push(neuron);
+      return this;
+    }
+  }
+}
+
+export class OutputLayer extends Layer {
+  constructor(activationFunction: (input: number) => number) {
+    super(activationFunction);
+  }
+
+  public addNeuron(): Layer {
+    {
+      let neuron: Neuron;
+
       neuron = new OutputNeuron(
         this.weightMatrix[this.neurons.length],
         this.inputs
       );
-    }
 
-    this.neurons.push(neuron);
-    return this;
+      this.neurons.push(neuron);
+      return this;
+    }
   }
 }
