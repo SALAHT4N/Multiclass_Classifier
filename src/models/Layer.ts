@@ -5,6 +5,7 @@ type NeuronType = "input" | "hidden" | "output";
 export class Layer {
   activationFunction: (input: number) => number;
   weightMatrix: number[][] = [[]];
+  thresholds: number[] = [];
   inputs: number[] = [];
   neurons: Neuron[] = [];
   type: NeuronType;

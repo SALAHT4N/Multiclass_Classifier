@@ -2,6 +2,8 @@ import "./style.css";
 import { ChartView } from "./views/ChartView";
 import state from "./models/State";
 import { Point } from "./models/Point";
+import { Network } from "./models/Network";
+import { Layer } from "./models/Layer";
 
 const chart: ChartView = new ChartView();
 
@@ -10,81 +12,12 @@ function onClickChartHandler(point: Point) {
   state.chartState.addPoint(point);
 }
 
-type NeuronType = "Input" | "Hidden" | "Output";
-
-type Neuron = {
-  type: NeuronType;
-  activate(): number;
-};
-
-type Layer = {
-  addNeuron(): Layer;
-  neurons: Neuron[];
-  weightMatrix: number[][];
-  inputs: number[];
-  activationFunction(net: number): number;
-};
-
-type Network = {
-  withLayer(layer: Layer): Network;
-  train(): void;
-  init(): void;
-  layers: Layer[];
-};
-
-function createNetwork(): Network {
-  return {
-    layers: [],
-    withLayer(layer: Layer) {
-      this.layers.push(layer);
-      return this;
-    },
-    init(): void {
-      this.layers.forEach((layer) => layer); // initialize weight matrices and inputs
-    },
-    train() {
-      train();
-    },
-  };
-}
-
-function createLayer(type: NeuronType): Layer {
-  return {
-    neurons: [],
-    addNeuron(): Layer {
-      this.neurons.push(createNeuron(type));
-      return this;
-    },
-    weightMatrix: [[]],
-    inputs: [],
-    activationFunction(net: number): number {
-      return net; // linear function
-    },
-  };
-}
-
-function createNeuron(type: NeuronType): Neuron {
-  return {
-    type: type,
-    activate(): number {
-      return 0;
-    },
-  };
-}
-
 function buildNetwork(): Network {
-  const inputLayer = createLayer("Input").addNeuron().addNeuron();
-  const hiddenLayer = createLayer("Hidden").addNeuron().addNeuron().addNeuron();
-  const outputLayer = createLayer("Output")
-    .addNeuron()
-    .addNeuron()
-    .addNeuron()
-    .addNeuron();
-
-  return createNetwork()
-    .withLayer(inputLayer)
-    .withLayer(hiddenLayer)
-    .withLayer(outputLayer);
+  return Network.getBuilder()
+    .setInputLayer(2)
+    .setOutputLayer((x) => x, 4)
+    .addHiddenLayer((x) => x, 3)
+    .build();
 }
 
 function captureDataset(): void {
@@ -118,9 +51,15 @@ function init(): void {
 }
 
 init();
+
 const network = buildNetwork();
-network.init();
+
+network.initialize();
+
 captureDataset();
-network.train = train;
-network.train();
+
+network.train([[]], (dataset, outputLayer, hiddenLayers) =>
+  console.log(dataset)
+);
+
 classify();
