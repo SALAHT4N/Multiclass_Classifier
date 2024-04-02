@@ -17,6 +17,8 @@
     "vite": "^5.2.0"
   },
   "dependencies": {
-    "chart.js": "^4.4.2"
+    "@types/chartjs": "^0.0.31",
+    "chart.js": "^4.4.2",
+    "chartjs-plugin-zoom": "^2.0.1"
   }
 }

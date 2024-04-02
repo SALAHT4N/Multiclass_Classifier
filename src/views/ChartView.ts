@@ -1,9 +1,19 @@
-import { Chart, registerables, LinearScale } from "chart.js";
+import {
+  Chart,
+  registerables,
+  LinearScale,
+  BubbleDataPoint,
+  ChartTypeRegistry,
+  ScatterDataPoint,
+} from "chart.js";
 import { Point } from "../models/Point";
+import zoomPlugin from "chartjs-plugin-zoom";
+import { Mode } from "chartjs-plugin-zoom/types/options";
 
 Chart.register(LinearScale);
 
 Chart.register(...registerables);
+Chart.register(zoomPlugin);
 
 export class ChartView {
   _parentElement = document.querySelector("#chart-container");
@@ -46,9 +56,33 @@ export class ChartView {
           x: {
             type: "linear" as const,
             position: "bottom" as const,
+            min: 0,
+            max: 100,
           },
           y: {
             type: "linear" as const,
+            min: 0,
+            max: 100,
+          },
+        },
+        plugins: {
+          zoom: {
+            zoom: {
+              wheel: {
+                enabled: true,
+              },
+              pinch: {
+                enabled: false,
+              },
+              pan: {
+                enabled: false,
+              },
+              mode: "xy" as "x" | "y" | "xy",
+            },
+            limits: {
+              y: { min: 0, max: 100 },
+              x: { min: 0, max: 100 },
+            },
           },
         },
       },
