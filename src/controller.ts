@@ -18,9 +18,8 @@ function onClickChartHandler(point: Point) {
 function buildNetwork(): Network {
   return Network.getBuilder()
     .setNumberOfFeatures(2)
-    .setOutputLayer((x) => x, 4)
     .addHiddenLayer((x) => x, 3)
-    .build();
+    .setOutputLayer((x) => x, 4);
 }
 
 /**
@@ -69,8 +68,6 @@ network.initialize();
 
 const dataset = formatDataset();
 
-network.train(dataset, (dataset, outputLayer, hiddenLayers) =>
-  console.log(dataset)
-);
+network.train(dataset, (dataset, network) => console.log(dataset));
 
 classify();

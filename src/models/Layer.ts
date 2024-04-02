@@ -1,9 +1,9 @@
 import { HiddenNeuron, Neuron, OutputNeuron } from "./Neuron";
 
-abstract class Layer {
+export abstract class Layer {
   neurons: Neuron[] = [];
   activationFunction: (input: number) => number;
-  weightMatrix: number[][] = [[]];
+  weightMatrix: number[][] = [];
   thresholds: number[] = [];
   inputs: number[] = [];
 
@@ -11,7 +11,26 @@ abstract class Layer {
     this.activationFunction = activationFunction;
   }
 
-  public abstract addNeuron(): Layer;
+  /**
+   * This method calculates each neuron activation in this layer and returns them
+   * @param layerInput Inputs to this layer
+   * @returns Array of neurons' activations
+   */
+  public activate(layerInput: number[]): number[] {
+    this.inputs = layerInput;
+
+    return this.neurons.map((neuron, i) =>
+      this.activationFunction(
+        neuron.activate(layerInput, this.weightMatrix[i], this.thresholds[i])
+      )
+    );
+  }
+
+  /**
+   * This method adds a neuron to a layer
+   * @param countOfPreviousLayerNeurons equals the number of outputs of previous layer
+   */
+  public abstract addNeuron(countOfPreviousLayerNeurons: number): Layer;
 }
 
 export class HiddenLayer extends Layer {
@@ -19,16 +38,12 @@ export class HiddenLayer extends Layer {
     super(activationFunction);
   }
 
-  public addNeuron(): Layer {
+  public addNeuron(countOfPreviousLayerNeurons: number): Layer {
     {
-      let neuron: Neuron;
+      this.weightMatrix.push(new Array<number>(countOfPreviousLayerNeurons));
 
-      neuron = new HiddenNeuron(
-        this.weightMatrix[this.neurons.length],
-        this.inputs
-      );
+      this.neurons.push(new HiddenNeuron());
 
-      this.neurons.push(neuron);
       return this;
     }
   }
@@ -39,16 +54,12 @@ export class OutputLayer extends Layer {
     super(activationFunction);
   }
 
-  public addNeuron(): Layer {
+  public addNeuron(countOfPreviousLayerNeurons: number): Layer {
     {
-      let neuron: Neuron;
+      this.weightMatrix.push(new Array<number>(countOfPreviousLayerNeurons));
 
-      neuron = new OutputNeuron(
-        this.weightMatrix[this.neurons.length],
-        this.inputs
-      );
+      this.neurons.push(new OutputNeuron());
 
-      this.neurons.push(neuron);
       return this;
     }
   }

@@ -1,3 +1,4 @@
+import { _angleBetween } from "chart.js/helpers";
 import { HiddenLayer, OutputLayer } from "./Layer";
 import { Network } from "./Network";
 
@@ -13,9 +14,9 @@ export class NetworkBuilder {
     activationFunction: (x: number) => number,
     numOfNeurons: number
   ): NetworkBuilder {
-    for (let i = 0; i < numOfNeurons; i++) {
-      this._network.hiddenLayers.push(new HiddenLayer(activationFunction));
-    }
+    let layer = new HiddenLayer(activationFunction);
+
+    this._network.insertHiddenLayer(layer, numOfNeurons);
 
     return this;
   }
@@ -23,18 +24,11 @@ export class NetworkBuilder {
   public setOutputLayer(
     activationFunction: (x: number) => number,
     numOfNeurons: number
-  ): NetworkBuilder {
+  ): Network {
     let layer = new OutputLayer(activationFunction);
 
-    for (let i = 0; i < numOfNeurons; i++) {
-      layer.addNeuron();
-    }
+    this._network.insertOutputLayer(layer, numOfNeurons);
 
-    this._network.outputLayer = layer;
-    return this;
-  }
-
-  public build(): Network {
     return this._network;
   }
 }
