@@ -87,8 +87,8 @@ export class ChartView {
 
   updateChart = (point: Point): void => {
     this._chart?.data.datasets
-      .filter((ds) => ds.label === point.group)[0]
-      .data.push([point.x, point.y]);
+      .find((ds) => ds.label === point.group)
+      ?.data.push([point.x, point.y]);
 
     this._chart?.update();
   };

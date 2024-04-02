@@ -12,14 +12,14 @@ class DataModel {
       });
   }
 
-  addListener(fn: (point: Point) => void) {
-    this._listeners.push(fn);
+  addListener(callback: (point: Point) => void) {
+    this._listeners.push(callback);
   }
 }
 
 class State {
-  currentSelectedGroup: string = "Group 1";
-  chartState: DataModel = new DataModel();
+  currentSelectedGroup = "Group 2";
+  chartState = new DataModel();
 }
 
 export default new State();

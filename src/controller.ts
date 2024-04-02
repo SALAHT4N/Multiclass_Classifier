@@ -14,6 +14,7 @@ type NeuronType = "Input" | "Hidden" | "Output";
 
 type Neuron = {
   type: NeuronType;
+  activate(): number;
 };
 
 type Layer = {
@@ -65,6 +66,9 @@ function createLayer(type: NeuronType): Layer {
 function createNeuron(type: NeuronType): Neuron {
   return {
     type: type,
+    activate(): number {
+      return 0;
+    },
   };
 }
 
