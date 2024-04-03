@@ -1,11 +1,13 @@
 import "./style.css";
 import { ChartView } from "./views/ChartView";
 import state from "./models/State";
-import { Point } from "./models/Point";
+import { Group, Point } from "./models/Point";
 import { Network } from "./models/Network";
 import {
   addDecrementBtnHandler,
   addIncrementBtnHandler,
+  addSelectGroupsHasChangedHandler,
+  updateSelectGroupsInput,
 } from "./views/ControlsView";
 
 const chart: ChartView = new ChartView();
@@ -62,10 +64,10 @@ function classify(): void {
 
 function IncrementBtnClickedHandler() {
   try {
-    state.dataModel.addGroup();
-    const groups = state.dataModel.getGroups();
-    console.log(groups);
-    chart.addDataset(groups[groups.length - 1]);
+    const addedGroup = state.dataModel.addGroup();
+    chart.addDataset(addedGroup);
+    updateSelectGroupsInput(state.dataModel.getGroups());
+    state.currentSelectedGroup = state.dataModel.getGroups()[0];
   } catch (e) {
     alert((e as Error).message);
   }
@@ -73,10 +75,18 @@ function IncrementBtnClickedHandler() {
 
 function DecrementBtnClickedHandler() {
   try {
-    chart.removeDataset(state.dataModel.removeGroup());
+    const deletedGroup = state.dataModel.removeGroup();
+    chart.removeDataset(deletedGroup);
+    state.dataModel.removePoints(deletedGroup);
+    updateSelectGroupsInput(state.dataModel.getGroups());
+    state.currentSelectedGroup = state.dataModel.getGroups()[0];
   } catch (e) {
     alert((e as Error).message);
   }
+}
+
+function selectedGroupChangedHandler(group: Group) {
+  state.currentSelectedGroup = group;
 }
 
 function init(): void {
@@ -84,6 +94,7 @@ function init(): void {
     chart.addOnClickEventListener(onClickChartHandler);
     addIncrementBtnHandler(IncrementBtnClickedHandler);
     addDecrementBtnHandler(DecrementBtnClickedHandler);
+    addSelectGroupsHasChangedHandler(selectedGroupChangedHandler);
     state.dataModel.addListener(chart.addPoint);
   } catch (e) {
     alert((e as Error).message);
