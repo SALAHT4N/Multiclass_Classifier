@@ -12,7 +12,20 @@ class DataModel {
         callback(point);
       });
   }
+  public addGroup(): void {
+    if (this._groups.length == 4) throw new Error("Maximum number of groups");
 
+    const tokens: string[] = this._groups[this._groups.length - 1].split(" ");
+    const newGroupNumber = Number(tokens[1]) + 1;
+    const newGroup: Group = (tokens[0] + " " + newGroupNumber) as Group;
+    this._groups.push(newGroup);
+  }
+
+  public removeGroup(): Group {
+    if (this._groups.length == 2) throw new Error("Minimum number of groups");
+
+    return this._groups.splice(-1)[0];
+  }
   public getGroups(): Group[] {
     return [...this._groups];
   }

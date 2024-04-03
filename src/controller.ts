@@ -3,6 +3,10 @@ import { ChartView } from "./views/ChartView";
 import state from "./models/State";
 import { Point } from "./models/Point";
 import { Network } from "./models/Network";
+import {
+  addDecrementBtnHandler,
+  addIncrementBtnHandler,
+} from "./views/ControlsView";
 
 const chart: ChartView = new ChartView();
 
@@ -56,9 +60,34 @@ function classify(): void {
   // try points to determine their output values
 }
 
+function IncrementBtnClickedHandler() {
+  try {
+    state.dataModel.addGroup();
+    const groups = state.dataModel.getGroups();
+    console.log(groups);
+    chart.addDataset(groups[groups.length - 1]);
+  } catch (e) {
+    alert((e as Error).message);
+  }
+}
+
+function DecrementBtnClickedHandler() {
+  try {
+    chart.removeDataset(state.dataModel.removeGroup());
+  } catch (e) {
+    alert((e as Error).message);
+  }
+}
+
 function init(): void {
-  chart.addOnClickEventListener(onClickChartHandler);
-  state.dataModel.addListener(chart.addPoint);
+  try {
+    chart.addOnClickEventListener(onClickChartHandler);
+    addIncrementBtnHandler(IncrementBtnClickedHandler);
+    addDecrementBtnHandler(DecrementBtnClickedHandler);
+    state.dataModel.addListener(chart.addPoint);
+  } catch (e) {
+    alert((e as Error).message);
+  }
 }
 
 init();
