@@ -18,8 +18,16 @@ function onClickChartHandler(point: Point) {
 function buildNetwork(): Network {
   return Network.getBuilder()
     .setNumberOfFeatures(2)
-    .addHiddenLayer((x) => x, 3)
-    .setOutputLayer((x) => x, 4);
+    .addHiddenLayer(
+      (x) => x,
+      (x) => 1,
+      3
+    )
+    .setOutputLayer(
+      (x) => x,
+      (x) => 1,
+      4
+    );
 }
 
 /**

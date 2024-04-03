@@ -111,6 +111,7 @@ export class Network {
     let outputs = input;
 
     for (let i = 0; i < allLayers.length; i++) {
+      allLayers[i].inputs = outputs;
       outputs = allLayers[i].activate(outputs);
     }
 

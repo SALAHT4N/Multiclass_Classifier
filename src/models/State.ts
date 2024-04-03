@@ -4,6 +4,7 @@ class DataModel {
   private _points: Point[] = [];
   private _groups: Group[] = ["Group 1", "Group 2"];
   private _listeners: ((points: Point) => void)[] = [];
+  public alpha = 0.1;
 
   public addPoint(point: Point): void {
     this._points.push(point);

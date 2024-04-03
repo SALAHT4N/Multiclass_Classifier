@@ -1,14 +1,21 @@
+import { MathematicalFunction } from "../utilities";
 import { HiddenNeuron, Neuron, OutputNeuron } from "./Neuron";
 
 export abstract class Layer {
   neurons: Neuron[] = [];
-  activationFunction: (input: number) => number;
+  activationFunction: MathematicalFunction;
+  derivativeOfActivation: MathematicalFunction;
+  gradients: number[] = [];
   weightMatrix: number[][] = [];
   thresholds: number[] = [];
   inputs: number[] = [];
 
-  constructor(activationFunction: (input: number) => number) {
+  constructor(
+    activationFunction: MathematicalFunction,
+    derivativeOfActivation: MathematicalFunction
+  ) {
     this.activationFunction = activationFunction;
+    this.derivativeOfActivation = derivativeOfActivation;
   }
 
   /**
@@ -34,8 +41,11 @@ export abstract class Layer {
 }
 
 export class HiddenLayer extends Layer {
-  constructor(activationFunction: (input: number) => number) {
-    super(activationFunction);
+  constructor(
+    activationFunction: MathematicalFunction,
+    derivativeOfActivation: MathematicalFunction
+  ) {
+    super(activationFunction, derivativeOfActivation);
   }
 
   public addNeuron(countOfPreviousLayerNeurons: number): Layer {
@@ -50,8 +60,11 @@ export class HiddenLayer extends Layer {
 }
 
 export class OutputLayer extends Layer {
-  constructor(activationFunction: (input: number) => number) {
-    super(activationFunction);
+  constructor(
+    activationFunction: MathematicalFunction,
+    derivativeOfActivation: MathematicalFunction
+  ) {
+    super(activationFunction, derivativeOfActivation);
   }
 
   public addNeuron(countOfPreviousLayerNeurons: number): Layer {
