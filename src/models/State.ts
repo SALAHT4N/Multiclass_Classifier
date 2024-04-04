@@ -19,6 +19,14 @@ class DataModel {
   }
 
   public getPoints(): Point[] {
+    return [
+      { x: 2, y: 1, group: "Group 1" },
+      { x: 3, y: 1, group: "Group 1" },
+      { x: 4, y: 1, group: "Group 1" },
+      { x: 1, y: 3, group: "Group 2" },
+      { x: 1, y: 4, group: "Group 2" },
+      { x: 1, y: 5, group: "Group 2" },
+    ];
     return [...this._points];
   }
 

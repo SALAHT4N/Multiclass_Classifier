@@ -3,6 +3,8 @@ import { ChartView } from "./views/ChartView";
 import state from "./models/State";
 import { Point } from "./models/Point";
 import { Network } from "./models/Network";
+import { gradientDescent } from "./models/trainingAlgorithms";
+import { sigmoid, sigmoidDerivative } from "./models/ActivationFunctions";
 
 const chart: ChartView = new ChartView();
 
@@ -18,16 +20,8 @@ function onClickChartHandler(point: Point) {
 function buildNetwork(): Network {
   return Network.getBuilder()
     .setNumberOfFeatures(2)
-    .addHiddenLayer(
-      (x) => x,
-      (x) => 1,
-      3
-    )
-    .setOutputLayer(
-      (x) => x,
-      (x) => 1,
-      4
-    );
+    .addHiddenLayer(sigmoid, sigmoidDerivative, 1)
+    .setOutputLayer(sigmoid, sigmoidDerivative, 2);
 }
 
 /**
@@ -40,8 +34,6 @@ function formatDataset(): number[][] {
 
   const formattedDataset = state.dataModel.getPoints().map((point) => {
     const sample = [point.x, point.y];
-
-    state.dataModel.getGroups().forEach(() => sample.push(0));
     const groups = state.dataModel.getGroups();
 
     for (let group of groups) {
@@ -76,6 +68,38 @@ network.initialize();
 
 const dataset = formatDataset();
 
-network.train(dataset, (dataset, network) => console.log(dataset));
+// console.log(dataset);
+console.log(JSON.parse(JSON.stringify(network)) as Network);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
 
 classify();
+const output = network.activate([4, 1]);
+console.log(`input x1 = 4 && x2 = 1 is equal to: ${output}`);
+console.log(network);

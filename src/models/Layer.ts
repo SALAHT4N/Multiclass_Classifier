@@ -51,6 +51,7 @@ export class HiddenLayer extends Layer {
   public addNeuron(countOfPreviousLayerNeurons: number): Layer {
     {
       this.weightMatrix.push(new Array<number>(countOfPreviousLayerNeurons));
+      this.thresholds.push(0);
 
       this.neurons.push(new HiddenNeuron());
 
@@ -70,6 +71,7 @@ export class OutputLayer extends Layer {
   public addNeuron(countOfPreviousLayerNeurons: number): Layer {
     {
       this.weightMatrix.push(new Array<number>(countOfPreviousLayerNeurons));
+      this.thresholds.push(0);
 
       this.neurons.push(new OutputNeuron());
 
