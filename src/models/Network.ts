@@ -4,6 +4,11 @@ import { NetworkBuilder } from "./NetworkBuilder";
 
 export type TrainingAlgorithm = (dataset: number[][], network: Network) => void;
 
+export type NeuronAdjustment = {
+  weightAdjustments: number[];
+  thresholdAdjustment: number;
+};
+
 export class Network {
   hiddenLayers: HiddenLayer[] = [];
   outputLayer: OutputLayer | null = null;
@@ -113,7 +118,14 @@ export class Network {
     for (let i = 0; i < allLayers.length; i++) {
       outputs = allLayers[i].activate(outputs);
     }
+    this.outputLayer.outputs = outputs;
     return outputs;
+  }
+
+  public update(allAdjustments: NeuronAdjustment[][]): void {
+    [this.outputLayer!, ...this.hiddenLayers].forEach((layer, i) =>
+      layer.update(allAdjustments[i])
+    );
   }
 
   /**

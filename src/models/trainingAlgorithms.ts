@@ -1,190 +1,85 @@
 import { _elementsEqual } from "chart.js/helpers";
-import { Network } from "./Network";
+import { Network, NeuronAdjustment } from "./Network";
 import state from "./State";
-import { Layer } from "./Layer";
-import Matrix from "ml-matrix";
-import { softmax, softmaxDerivative } from "./ActivationFunctions";
+import { HiddenLayer } from "./Layer";
 
 export function gradientDescent(dataset: number[][], network: Network): void {
+  const clearOldGradients = () => {
+    network.hiddenLayers.forEach((layer) => (layer.gradients = []));
+    network.outputLayer!.gradients = [];
+  };
+
   // 1. iterate through the dataset line by line
   if (network.outputLayer === null) {
     throw new Error("Output layer not set");
   }
 
-  console.log("Before learning");
-
-  console.log("Weights for each layer:");
-  console.log("Output: ");
-  console.log(network.outputLayer?.weightMatrix);
-
-  network.hiddenLayers.forEach((layer, i) => {
-    console.log(`Hidden layer ${i}`);
-    console.log(layer.weightMatrix);
-  });
+  logWeightsToConsole(network, "Before");
 
   for (let labeledInput of dataset) {
-    network.hiddenLayers.forEach((layer) => (layer.gradients = []));
-    network.outputLayer.gradients = [];
+    clearOldGradients();
 
-    if (debug(network.outputLayer!.weightMatrix)) {
-      debugger;
-    }
     // 2. activate layers, layer by layer starting from input to output
-    /**
-     * Input neuron activations are just the input themselves
-     * Hidden neurons activations are the weighted sum plugged into an activation function
-     * Output neurons same as hidden ones
-     */
-    const actualOutput = network.activate(
-      labeledInput.slice(0, network.numberOfFeatures)
-    );
+    network.activate(labeledInput.slice(0, network.numberOfFeatures));
 
     // 3.calculate the error and start back propagating
-    const allLayers = [
-      network.outputLayer,
-      ...[...network.hiddenLayers].reverse(),
-    ];
+    const triggerHiddenLayersLearn = (hiddenLayers: HiddenLayer[]) => {
+      const adjustments: NeuronAdjustment[][] = [];
 
-    type NeuronAdjustment = {
-      weightAdjustments: number[];
-      thresholdAdjustment: number;
+      for (let i = 0; i < hiddenLayers.length; i++) {
+        let currentLayerOutput: number[];
+        let nextWeightMatrix: number[][];
+        let nextGradients: number[];
+
+        if (i > 0) {
+          currentLayerOutput = hiddenLayers[i - 1]!.inputs;
+          nextWeightMatrix = hiddenLayers[i - 1]!.weightMatrix;
+          nextGradients = hiddenLayers[i - 1]!.gradients;
+        } else {
+          currentLayerOutput = network.outputLayer!.inputs;
+          nextWeightMatrix = network.outputLayer!.weightMatrix;
+          nextGradients = network.outputLayer!.gradients;
+        }
+
+        const hiddenlayerAdjustments = hiddenLayers[i].learn(
+          currentLayerOutput,
+          nextWeightMatrix,
+          nextGradients,
+          state.dataModel.alpha
+        );
+
+        adjustments.push(hiddenlayerAdjustments);
+      }
+
+      return adjustments;
     };
 
-    const allAdjustments: NeuronAdjustment[][] = [];
-
     const desiredOutput = labeledInput.slice(network.numberOfFeatures);
+    const outputLayerAdjustments = network.outputLayer.learn(
+      desiredOutput,
+      state.dataModel.alpha
+    );
 
-    const outputLayerAdjustments = actualOutput.map((_, i) => {
-      if (debug(network.outputLayer!.weightMatrix)) {
-        debugger;
-      }
-      /**
-       * Output neurons error calculation is the difference between actual and desired outputs
-       */
-      const error = desiredOutput[i] - actualOutput[i];
-
-      // const gradient = network.outputLayer!.derivativeOfActivation(
-      //   actualOutput[i]
-      // );
-
-      const gradient = softmaxDerivative(i, actualOutput);
-
-      network.outputLayer!.gradients.push(gradient);
-
-      if (!gradient) {
-        throw new Error("No output layer set");
-      }
-
-      const gradientError = error * gradient;
-
-      const weightAdjustments = network.outputLayer!.inputs.map(
-        (input) => gradientError * state.dataModel.alpha * input
-      );
-
-      const thresholdAdjustment =
-        gradientError *
-        state.dataModel.alpha *
-        network.outputLayer!.thresholds[i];
-
-      if (debug([weightAdjustments])) {
-        debugger;
-      }
-      return {
-        weightAdjustments: weightAdjustments,
-        thresholdAdjustment: thresholdAdjustment,
-      } as NeuronAdjustment;
-    });
-
-    allAdjustments.push(outputLayerAdjustments);
-
-    const reversedHiddenLayers: Layer[] = [
+    const reversedHiddenLayers: HiddenLayer[] = [
       ...network.hiddenLayers,
-      network.outputLayer!,
     ].reverse();
 
-    console.log("hello");
-    console.log(reversedHiddenLayers.length - 1);
-    for (let i = 1; i < reversedHiddenLayers.length; i++) {
-      const currentLayerOutput = reversedHiddenLayers[i - 1]!.inputs;
-      const nextWeightMatrix = reversedHiddenLayers[i - 1]!.weightMatrix;
-      const nextGradients = reversedHiddenLayers[i - 1]!.gradients;
+    const hiddenAdjustments = triggerHiddenLayersLearn(reversedHiddenLayers);
 
-      const hiddenlayerAdjustments = reversedHiddenLayers[i]!.neurons.map(
-        (neuron, j) => {
-          const gradient = reversedHiddenLayers[i]!.derivativeOfActivation(
-            currentLayerOutput[j]
-          );
+    const allAdjustments: NeuronAdjustment[][] = [
+      outputLayerAdjustments,
+      ...hiddenAdjustments,
+    ];
 
-          reversedHiddenLayers[i]!.gradients.push(gradient);
-          /*
-           * Hidden neurons error calculation is the effect on further layers
-           */
-          const error = nextWeightMatrix.reduce(
-            (sum: number, weightVector: number[], k: number) =>
-              nextGradients[k] * weightVector[j] + sum,
-            0
-          );
-          console.log(`Error is for neuron ${j} is ${error}`);
-
-          const gradientError = error * gradient;
-
-          // console.log(`inputs of hidden layer are:`);
-          // console.log(reversedHiddenLayers[i]!.inputs);
-          const weightAdjustments = reversedHiddenLayers[i]!.inputs.map(
-            (input) => {
-              return state.dataModel.alpha * gradientError * input;
-            }
-          );
-
-          const thresholdAdjustment =
-            reversedHiddenLayers[i].thresholds[j] *
-            state.dataModel.alpha *
-            gradientError;
-
-          if (debug([weightAdjustments])) {
-            debugger;
-          }
-
-          return { weightAdjustments, thresholdAdjustment } as NeuronAdjustment;
-        }
-      );
-
-      allAdjustments.push(hiddenlayerAdjustments);
-    }
     // 4. update old weights and thresholds to the new calculated values
-    allAdjustments.forEach((layerAdjustment, i: number) => {
-      // console.log(`Adjustment matrix ${i}`);
-      // console.log(adjustmentMatrix);
-      const A = new Matrix(
-        layerAdjustment.map((adjustment) => adjustment.weightAdjustments)
-      );
-      const B = new Matrix(reversedHiddenLayers[i].weightMatrix);
-
-      reversedHiddenLayers[i].weightMatrix = Matrix.add(A, B).to2DArray();
-
-      const C = new Matrix([
-        layerAdjustment.map((adjustment) => adjustment.thresholdAdjustment),
-      ]);
-
-      const D = new Matrix([reversedHiddenLayers[i].thresholds]);
-
-      console.log(`threshold before adjustment layer ${i}`);
-      console.log(reversedHiddenLayers[i].thresholds);
-
-      reversedHiddenLayers[i].thresholds = Matrix.add(C, D).to1DArray();
-
-      console.log(`threshold after adjustment layer ${i}`);
-      console.log(reversedHiddenLayers[i].thresholds);
-
-      if (debug(network.outputLayer!.weightMatrix)) {
-        debugger;
-      }
-    });
-    if (debug(network.outputLayer!.weightMatrix)) {
-      debugger;
-    }
+    network.update(allAdjustments);
   }
-  console.log("After learning");
+
+  logWeightsToConsole(network, "After");
+}
+
+function logWeightsToConsole(network: Network, phase: "Before" | "After") {
+  console.log(`${phase} learning`);
   console.log("Weights for each layer:");
   console.log("Output: ");
   console.log(network.outputLayer?.weightMatrix);
@@ -193,9 +88,7 @@ export function gradientDescent(dataset: number[][], network: Network): void {
     console.log(`Hidden layer ${i}`);
     console.log(layer.weightMatrix);
   });
-  // TODO: finish gradient descent algorithm
 }
-
 function debug(weights: number[][]): boolean {
   return weights.some((w) => w.some((x) => x > 2.4 || x < -2.4));
 }

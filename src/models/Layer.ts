@@ -1,4 +1,7 @@
+import Matrix from "ml-matrix";
 import { MathematicalFunction } from "../utilities";
+import { softmaxDerivative } from "./ActivationFunctions";
+import { NeuronAdjustment } from "./Network";
 import { HiddenNeuron, Neuron, OutputNeuron } from "./Neuron";
 
 export abstract class Layer {
@@ -34,6 +37,27 @@ export abstract class Layer {
   }
 
   /**
+   * This method updates the weights and thresholds for this layer
+   * @param adjustments array of NeuronAdjustment for each neuron in this layer
+   */
+  public update(adjustments: NeuronAdjustment[]): void {
+    const A = new Matrix(
+      adjustments.map((adjustment) => adjustment.weightAdjustments)
+    );
+    const B = new Matrix(this.weightMatrix);
+
+    this.weightMatrix = Matrix.add(A, B).to2DArray();
+
+    const C = new Matrix([
+      adjustments.map((adjustment) => adjustment.thresholdAdjustment),
+    ]);
+
+    const D = new Matrix([this.thresholds]);
+
+    this.thresholds = Matrix.add(C, D).to1DArray();
+  }
+
+  /**
    * This method adds a neuron to a layer
    * @param countOfPreviousLayerNeurons equals the number of outputs of previous layer
    */
@@ -58,9 +82,47 @@ export class HiddenLayer extends Layer {
       return this;
     }
   }
+
+  /**
+   * This method triggers the learning process for this layer
+   * @param outputs the calculated activations of this layer
+   * @param nextWeightMatrix weight matrix of next layer in network
+   * @param nextGradients gradients of next layer in network
+   * @param alpha learning rate
+   * @returns Adjustments to be applied to each neuron in this layer
+   */
+  public learn(
+    outputs: number[],
+    nextWeightMatrix: number[][],
+    nextGradients: number[],
+    alpha: number
+  ): NeuronAdjustment[] {
+    return this.neurons.map((_neuron, j) => {
+      const gradient = this.derivativeOfActivation(outputs[j]);
+
+      this.gradients.push(gradient);
+
+      const error = nextWeightMatrix.reduce(
+        (sum: number, weightVector: number[], k: number) =>
+          nextGradients[k] * weightVector[j] + sum,
+        0
+      );
+
+      const gradientError = error * gradient;
+      const weightAdjustments = this.inputs.map((input) => {
+        return alpha * gradientError * input;
+      });
+
+      const thresholdAdjustment = this.thresholds[j] * alpha * gradientError;
+
+      return { weightAdjustments, thresholdAdjustment } as NeuronAdjustment;
+    });
+  }
 }
 
 export class OutputLayer extends Layer {
+  outputs: number[] = [];
+
   constructor(
     activationFunction: MathematicalFunction,
     derivativeOfActivation: MathematicalFunction
@@ -77,5 +139,34 @@ export class OutputLayer extends Layer {
 
       return this;
     }
+  }
+
+  /**
+   * This method triggers the learning process for this layer
+   * @param desiredOutput output portion of one data sample
+   * @param alpha learning rate
+   * @returns Adjustments to be applied to each neuron in this layer
+   */
+  public learn(desiredOutput: number[], alpha: number): NeuronAdjustment[] {
+    return this.outputs.map((_, i) => {
+      /**
+       * Output neurons error calculation is the difference between actual and desired outputs
+       */
+      const error = desiredOutput[i] - this.outputs[i];
+
+      const gradient = this.derivativeOfActivation(this.outputs[i]);
+
+      //const gradient = softmaxDerivative(i, this.outputs);
+
+      this.gradients.push(gradient);
+      const gradientError = error * gradient;
+
+      return {
+        weightAdjustments: this.inputs.map(
+          (input) => gradientError * alpha * input
+        ),
+        thresholdAdjustment: gradientError * alpha * this.thresholds[i],
+      } as NeuronAdjustment;
+    });
   }
 }
