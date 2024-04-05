@@ -118,10 +118,14 @@ const dataset = formatDataset();
 // console.log(dataset);
 console.log(JSON.parse(JSON.stringify(network)) as Network);
 network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
+network.train(dataset, gradientDescent);
 classify();
 console.log(`input ${[4, 1]} is equal to: ${network.activate([4, 1])}`);
 
 console.log(`input ${[3, 1]} is equal to: ${network.activate([3, 1])}`);
-// console.log(`input ${[1, 6]} is equal to: ${network.activate([1, 6])}`);
+console.log(`input ${[1, 6]} is equal to: ${network.activate([1, 6])}`);
 
 console.log(network);
