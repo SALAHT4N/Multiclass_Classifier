@@ -11,6 +11,8 @@ import {
   sigmoidDerivative,
   softmax,
   softmaxDerivative,
+  tanh,
+  tanhDerivative,
 } from "./models/ActivationFunctions";
 import {
   addClearButtonClickedHandler,
@@ -22,8 +24,6 @@ import {
   getLearningAlgorithmParamters,
   updateSelectGroupsInput,
 } from "./views/ControlsView";
-
-const chart: ChartView = new ChartView();
 
 function onClickChartHandler(point: Point) {
   point.group = state.currentSelectedGroup;
@@ -37,8 +37,14 @@ function onClickChartHandler(point: Point) {
 function buildNetwork(): Network {
   return Network.getBuilder()
     .setNumberOfFeatures(2)
-    .addHiddenLayer(linear, linearDerivative, 3)
-    .setOutputLayer(softmax, softmaxDerivative, 2);
+    .addHiddenLayer(tanh, tanhDerivative, 4)
+    .addHiddenLayer(tanh, tanhDerivative, 4)
+    .addHiddenLayer(tanh, tanhDerivative, 4)
+    .setOutputLayer(
+      softmax,
+      softmaxDerivative,
+      state.dataModel.getGroups().length
+    );
 }
 
 /**
@@ -102,34 +108,25 @@ function selectedGroupChangedHandler(group: Group) {
 
 function startButtonClickedHandler(): void {
   clearStartButtonToggle();
-
+  const network = buildNetwork();
+  network.initialize();
   const ps = getLearningAlgorithmParamters();
+  state.dataModel.alpha = ps.learningRate;
 
-  //Start the learn algorithm
+  for (let i = 0; i < ps.epochs; i++)
+    network.train(formatDataset(), gradientDescent);
 
   const shadowDatasets = chart.getShadowDataset();
 
   for (let i = 0; i <= 100; i = i + 1.5) {
     for (let j = 0; j <= 100; j = j + 1.2) {
-      shadowDatasets[`Group 1 Shadow`].data.push([j, i]);
+      const ans = network.activate([j, i]);
+      const groupNum = ans.indexOf(Math.max(...ans)) + 1;
+      shadowDatasets[`Group ${groupNum} Shadow`].data.push([j, i]);
     }
   }
 
   chart.updateChart();
-  // const intId = setInterval(() => {
-  //   if (x > 100) {
-  //     x = 0;
-  //     y = y + 0.5;
-  //   }
-  //   if (y > 100) {
-  //     clearInterval(intId);
-  //     chart.updateChart();
-  //   }
-
-  //   shadowDatasets["Group 1 Shadow"].data.push([x, y]);
-
-  //   x = x + 0.5;
-  // }, 10);
 }
 
 function clearButtonClickedHandler() {
@@ -151,20 +148,6 @@ function init(): void {
   }
 }
 
+const chart: ChartView = new ChartView();
+
 init();
-
-const network = buildNetwork();
-network.initialize();
-
-const dataset = formatDataset();
-
-// console.log(dataset);
-console.log(JSON.parse(JSON.stringify(network)) as Network);
-network.train(dataset, gradientDescent);
-classify();
-console.log(`input ${[4, 1]} is equal to: ${network.activate([4, 1])}`);
-
-console.log(`input ${[3, 1]} is equal to: ${network.activate([3, 1])}`);
-// console.log(`input ${[1, 6]} is equal to: ${network.activate([1, 6])}`);
-
-console.log(network);

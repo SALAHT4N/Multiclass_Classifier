@@ -99,7 +99,7 @@ export class HiddenLayer extends Layer {
     alpha: number
   ): NeuronAdjustment[] {
     return this.neurons.map((_neuron, j) => {
-      const gradient = this.derivativeOfActivation(this.preActivations[j]);
+      const gradient = this.derivativeOfActivation(outputs[j]);
 
       this.gradients.push(gradient);
 
@@ -166,8 +166,8 @@ export class OutputLayer extends Layer {
       const error = desiredOutput[i] - this.outputs[i];
 
       const gradient = this.derivativeOfActivation(
-        this.preActivations[i],
-        this.preActivations
+        this.outputs[i],
+        this.outputs
       );
 
       this.gradients.push(gradient);
