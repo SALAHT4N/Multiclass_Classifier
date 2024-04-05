@@ -1,14 +1,6 @@
-import {
-  Chart,
-  registerables,
-  LinearScale,
-  BubbleDataPoint,
-  ChartTypeRegistry,
-  ScatterDataPoint,
-} from "chart.js";
+import { Chart, registerables, LinearScale } from "chart.js";
 import { Point } from "../models/Point";
 import zoomPlugin from "chartjs-plugin-zoom";
-import { Mode } from "chartjs-plugin-zoom/types/options";
 
 Chart.register(LinearScale);
 

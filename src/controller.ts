@@ -5,10 +5,6 @@ import { Group, Point } from "./models/Point";
 import { Network } from "./models/Network";
 import { gradientDescent } from "./models/trainingAlgorithms";
 import {
-  linear,
-  linearDerivative,
-  sigmoid,
-  sigmoidDerivative,
   softmax,
   softmaxDerivative,
   tanh,
@@ -71,12 +67,6 @@ function formatDataset(): number[][] {
   });
 
   return formattedDataset;
-}
-
-function train(): void {}
-
-function classify(): void {
-  // try points to determine their output values
 }
 
 function IncrementBtnClickedHandler() {

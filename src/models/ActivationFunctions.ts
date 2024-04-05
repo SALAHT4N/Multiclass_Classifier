@@ -19,7 +19,7 @@ export function linear(x: number): number {
   return x;
 }
 
-export function linearDerivative(x: number) {
+export function linearDerivative(_: number) {
   return 1;
 }
 

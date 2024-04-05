@@ -1,6 +1,5 @@
 import Matrix from "ml-matrix";
 import { MathematicalFunction } from "../utilities";
-import { softmaxDerivative } from "./ActivationFunctions";
 import { NeuronAdjustment } from "./Network";
 import { HiddenNeuron, Neuron, OutputNeuron } from "./Neuron";
 

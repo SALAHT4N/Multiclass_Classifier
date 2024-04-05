@@ -88,6 +88,3 @@ function logWeightsToConsole(network: Network, phase: "Before" | "After") {
     console.log(JSON.parse(JSON.stringify(layer.weightMatrix)));
   });
 }
-function debug(weights: number[][]): boolean {
-  return weights.some((w) => w.some((x) => x > 2.4 || x < -2.4));
-}
