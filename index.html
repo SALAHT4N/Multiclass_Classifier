@@ -43,10 +43,44 @@
                 <option>Group 2</option>
               </select>
             </div>
+            <div>
+              <label class="form-control w-full max-w-xs">
+                <div class="label">
+                  <span class="label-text font-semibold">No. of Epochs</span>
+                </div>
+                <input
+                  id="epcohs-input"
+                  type="number"
+                  placeholder="Type here"
+                  class="input input-accent w-full max-w-xs"
+                />
+                <div class="label"></div>
+              </label>
+            </div>
+            <div>
+              <label class="form-control w-full max-w-xs">
+                <div class="label">
+                  <span class="label-text font-semibold">Learning rate</span>
+                </div>
+                <input
+                  id="lrnrt-input"
+                  type="number"
+                  placeholder="Type here"
+                  class="input input-accent w-full max-w-xs"
+                />
+                <div class="label"></div>
+              </label>
+            </div>
           </div>
           <div class="mt-auto">
             <button id="start-button" class="btn btn-primary text-lg w-full">
               Start
+            </button>
+            <button
+              id="clear-button"
+              class="hidden btn btn-outline btn-error text-lg w-full"
+            >
+              Clear
             </button>
           </div>
         </div>

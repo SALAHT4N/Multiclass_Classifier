@@ -4,9 +4,13 @@ import state from "./models/State";
 import { Group, Point } from "./models/Point";
 import { Network } from "./models/Network";
 import {
+  addClearButtonClickedHandler,
   addDecrementBtnHandler,
   addIncrementBtnHandler,
   addSelectGroupsHasChangedHandler,
+  addStartButtonClickedHandler,
+  clearStartButtonToggle,
+  getLearningAlgorithmParamters,
   updateSelectGroupsInput,
 } from "./views/ControlsView";
 
@@ -89,6 +93,43 @@ function selectedGroupChangedHandler(group: Group) {
   state.currentSelectedGroup = group;
 }
 
+function startButtonClickedHandler(): void {
+  clearStartButtonToggle();
+
+  const ps = getLearningAlgorithmParamters();
+
+  //Start the learn algorithm
+
+  const shadowDatasets = chart.getShadowDataset();
+
+  for (let i = 0; i <= 100; i = i + 1.5) {
+    for (let j = 0; j <= 100; j = j + 1.2) {
+      shadowDatasets[`Group 1 Shadow`].data.push([j, i]);
+    }
+  }
+
+  chart.updateChart();
+  // const intId = setInterval(() => {
+  //   if (x > 100) {
+  //     x = 0;
+  //     y = y + 0.5;
+  //   }
+  //   if (y > 100) {
+  //     clearInterval(intId);
+  //     chart.updateChart();
+  //   }
+
+  //   shadowDatasets["Group 1 Shadow"].data.push([x, y]);
+
+  //   x = x + 0.5;
+  // }, 10);
+}
+
+function clearButtonClickedHandler() {
+  chart.clearChart();
+  clearStartButtonToggle();
+}
+
 function init(): void {
   try {
     chart.addOnClickEventListener(onClickChartHandler);
@@ -96,6 +137,8 @@ function init(): void {
     addDecrementBtnHandler(DecrementBtnClickedHandler);
     addSelectGroupsHasChangedHandler(selectedGroupChangedHandler);
     state.dataModel.addListener(chart.addPoint);
+    addStartButtonClickedHandler(startButtonClickedHandler);
+    addClearButtonClickedHandler(clearButtonClickedHandler);
   } catch (e) {
     alert((e as Error).message);
   }
