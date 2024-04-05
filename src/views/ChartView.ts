@@ -21,13 +21,29 @@ const groupColors = [
   "rgba(5, 200, 132, 1)",
   "rgba(10, 109, 3, 1)",
 ];
-
+const shadowColors = [
+  "rgba(255, 99, 132, 0.1)",
+  "rgba(20, 99, 132, 0.1)",
+  "rgba(5, 200, 132, 0.1)",
+  "rgba(10, 109, 3, 0.1)",
+];
 export class ChartView {
   _parentElement = document.querySelector("#chart-container");
   _canvas = document.querySelector("#chart") as HTMLCanvasElement;
   _context = this._canvas.getContext("2d") as CanvasRenderingContext2D;
   _chart: Chart | null = null;
-
+  private initDatasets = [
+    {
+      label: "Group 1",
+      data: [],
+      backgroundColor: groupColors[0],
+    },
+    {
+      label: "Group 2",
+      data: [],
+      backgroundColor: groupColors[1],
+    },
+  ];
   constructor() {
     this._initChart();
   }
@@ -36,11 +52,29 @@ export class ChartView {
     this._chart?.data.datasets.push({
       label: label,
       data: [],
-      backgroundColor: groupColors[this._chart.data.datasets.length],
+      backgroundColor:
+        groupColors[
+          this._chart.data.datasets.filter(
+            (ds) => !ds.label?.includes("Shadow")
+          ).length
+        ],
     });
     this._chart?.update();
   }
+  public getShadowDataset() {
+    return this._chart?.data.datasets.reduce((obj: any, cur, i) => {
+      const shadowObj = {
+        label: cur.label + " Shadow",
+        data: [],
+        backgroundColor: shadowColors[i],
+        radius: 5,
+      };
 
+      this._chart?.data.datasets.push(shadowObj);
+      obj[cur.label + " Shadow"] = shadowObj;
+      return obj;
+    }, {});
+  }
   public removeDataset(label: string) {
     const newDataset = this._chart?.data.datasets.filter(
       (ds) => ds.label != label
@@ -55,18 +89,7 @@ export class ChartView {
     const config = {
       type: "scatter" as const,
       data: {
-        datasets: [
-          {
-            label: "Group 1",
-            data: [],
-            backgroundColor: groupColors[0],
-          },
-          {
-            label: "Group 2",
-            data: [],
-            backgroundColor: groupColors[1],
-          },
-        ],
+        datasets: JSON.parse(JSON.stringify(this.initDatasets)),
       },
       options: {
         scales: {
@@ -83,6 +106,12 @@ export class ChartView {
           },
         },
         plugins: {
+          tooltip: {
+            enabled: true,
+            filter: function (context: any) {
+              return !context.dataset.label.includes("Shadow");
+            },
+          },
           zoom: {
             zoom: {
               wheel: {
@@ -135,6 +164,9 @@ export class ChartView {
       }
     });
   }
+  public updateChart(): void {
+    this._chart?.update();
+  }
 
   addPoint = (point: Point): void => {
     this._chart?.data.datasets
@@ -143,4 +175,9 @@ export class ChartView {
 
     this._chart?.update();
   };
+
+  public clearChart(): void {
+    this._chart!.data.datasets = JSON.parse(JSON.stringify(this.initDatasets));
+    this.updateChart();
+  }
 }

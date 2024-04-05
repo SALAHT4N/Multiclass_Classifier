@@ -7,6 +7,14 @@ export function sigmoidDerivative(x: number) {
   return sig * (1 - sig);
 }
 
+export function tanh(x: number): number {
+  return Math.tanh(x);
+}
+
+export function tanhDerivative(x: number): number {
+  return 1 - Math.pow(tanh(x), 2);
+}
+
 export function linear(x: number): number {
   return x;
 }

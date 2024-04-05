@@ -11,15 +11,19 @@ import {
   sigmoidDerivative,
   softmax,
   softmaxDerivative,
+  tanh,
+  tanhDerivative,
 } from "./models/ActivationFunctions";
 import {
+  addClearButtonClickedHandler,
   addDecrementBtnHandler,
   addIncrementBtnHandler,
   addSelectGroupsHasChangedHandler,
+  addStartButtonClickedHandler,
+  clearStartButtonToggle,
+  getLearningAlgorithmParamters,
   updateSelectGroupsInput,
 } from "./views/ControlsView";
-
-const chart: ChartView = new ChartView();
 
 function onClickChartHandler(point: Point) {
   point.group = state.currentSelectedGroup;
@@ -33,8 +37,14 @@ function onClickChartHandler(point: Point) {
 function buildNetwork(): Network {
   return Network.getBuilder()
     .setNumberOfFeatures(2)
-    .addHiddenLayer(linear, linearDerivative, 3)
-    .setOutputLayer(softmax, softmaxDerivative, 2);
+    .addHiddenLayer(tanh, tanhDerivative, 4)
+    .addHiddenLayer(tanh, tanhDerivative, 4)
+    .addHiddenLayer(tanh, tanhDerivative, 4)
+    .setOutputLayer(
+      softmax,
+      softmaxDerivative,
+      state.dataModel.getGroups().length
+    );
 }
 
 /**
@@ -96,6 +106,34 @@ function selectedGroupChangedHandler(group: Group) {
   state.currentSelectedGroup = group;
 }
 
+function startButtonClickedHandler(): void {
+  clearStartButtonToggle();
+  const network = buildNetwork();
+  network.initialize();
+  const ps = getLearningAlgorithmParamters();
+  state.dataModel.alpha = ps.learningRate;
+
+  for (let i = 0; i < ps.epochs; i++)
+    network.train(formatDataset(), gradientDescent);
+
+  const shadowDatasets = chart.getShadowDataset();
+
+  for (let i = 0; i <= 100; i = i + 1.5) {
+    for (let j = 0; j <= 100; j = j + 1.2) {
+      const ans = network.activate([j, i]);
+      const groupNum = ans.indexOf(Math.max(...ans)) + 1;
+      shadowDatasets[`Group ${groupNum} Shadow`].data.push([j, i]);
+    }
+  }
+
+  chart.updateChart();
+}
+
+function clearButtonClickedHandler() {
+  chart.clearChart();
+  clearStartButtonToggle();
+}
+
 function init(): void {
   try {
     chart.addOnClickEventListener(onClickChartHandler);
@@ -103,29 +141,13 @@ function init(): void {
     addDecrementBtnHandler(DecrementBtnClickedHandler);
     addSelectGroupsHasChangedHandler(selectedGroupChangedHandler);
     state.dataModel.addListener(chart.addPoint);
+    addStartButtonClickedHandler(startButtonClickedHandler);
+    addClearButtonClickedHandler(clearButtonClickedHandler);
   } catch (e) {
     alert((e as Error).message);
   }
 }
 
+const chart: ChartView = new ChartView();
+
 init();
-
-const network = buildNetwork();
-network.initialize();
-
-const dataset = formatDataset();
-
-// console.log(dataset);
-console.log(JSON.parse(JSON.stringify(network)) as Network);
-network.train(dataset, gradientDescent);
-network.train(dataset, gradientDescent);
-network.train(dataset, gradientDescent);
-network.train(dataset, gradientDescent);
-network.train(dataset, gradientDescent);
-classify();
-console.log(`input ${[4, 1]} is equal to: ${network.activate([4, 1])}`);
-
-console.log(`input ${[3, 1]} is equal to: ${network.activate([3, 1])}`);
-console.log(`input ${[1, 6]} is equal to: ${network.activate([1, 6])}`);
-
-console.log(network);
