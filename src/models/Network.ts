@@ -4,6 +4,11 @@ import { NetworkBuilder } from "./NetworkBuilder";
 
 export type TrainingAlgorithm = (dataset: number[][], network: Network) => void;
 
+export type NeuronAdjustment = {
+  weightAdjustments: number[];
+  thresholdAdjustment: number;
+};
+
 export class Network {
   hiddenLayers: HiddenLayer[] = [];
   outputLayer: OutputLayer | null = null;
@@ -13,7 +18,7 @@ export class Network {
    * This method initialize the weights and thresholds of the neural network
    */
   public initialize(): void {
-    this.hiddenLayers.forEach((layer) => {
+    [...this.hiddenLayers, this.outputLayer!].forEach((layer) => {
       const lowerBound = -2.4 / layer.weightMatrix[0].length;
       const upperBound = 2.4 / layer.weightMatrix[0].length;
 
@@ -100,7 +105,7 @@ export class Network {
 
   /**
    * This method activates the nueral network and calculates the output of the activation
-   * @param dataset input portion of a single data point
+   * @param input input portion of a single data point
    */
   public activate(input: number[]): number[] {
     if (this.outputLayer === null) {
@@ -111,10 +116,18 @@ export class Network {
     let outputs = input;
 
     for (let i = 0; i < allLayers.length; i++) {
+      //console.log(`input of layer ${i} = ${outputs}`);
       outputs = allLayers[i].activate(outputs);
+      //console.log(`output of layer ${i} = ${outputs}`);
     }
-
+    this.outputLayer.outputs = outputs;
     return outputs;
+  }
+
+  public update(allAdjustments: NeuronAdjustment[][]): void {
+    [this.outputLayer!, ...[...this.hiddenLayers].reverse()].forEach(
+      (layer, i) => layer.update(allAdjustments[i])
+    );
   }
 
   /**

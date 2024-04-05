@@ -3,6 +3,15 @@ import { ChartView } from "./views/ChartView";
 import state from "./models/State";
 import { Group, Point } from "./models/Point";
 import { Network } from "./models/Network";
+import { gradientDescent } from "./models/trainingAlgorithms";
+import {
+  linear,
+  linearDerivative,
+  sigmoid,
+  sigmoidDerivative,
+  softmax,
+  softmaxDerivative,
+} from "./models/ActivationFunctions";
 import {
   addClearButtonClickedHandler,
   addDecrementBtnHandler,
@@ -28,8 +37,8 @@ function onClickChartHandler(point: Point) {
 function buildNetwork(): Network {
   return Network.getBuilder()
     .setNumberOfFeatures(2)
-    .addHiddenLayer((x) => x, 3)
-    .setOutputLayer((x) => x, 4);
+    .addHiddenLayer(linear, linearDerivative, 3)
+    .setOutputLayer(softmax, softmaxDerivative, 2);
 }
 
 /**
@@ -42,8 +51,6 @@ function formatDataset(): number[][] {
 
   const formattedDataset = state.dataModel.getPoints().map((point) => {
     const sample = [point.x, point.y];
-
-    state.dataModel.getGroups().forEach(() => sample.push(0));
     const groups = state.dataModel.getGroups();
 
     for (let group of groups) {
@@ -151,6 +158,13 @@ network.initialize();
 
 const dataset = formatDataset();
 
-network.train(dataset, (dataset, network) => console.log(dataset));
-
+// console.log(dataset);
+console.log(JSON.parse(JSON.stringify(network)) as Network);
+network.train(dataset, gradientDescent);
 classify();
+console.log(`input ${[4, 1]} is equal to: ${network.activate([4, 1])}`);
+
+console.log(`input ${[3, 1]} is equal to: ${network.activate([3, 1])}`);
+// console.log(`input ${[1, 6]} is equal to: ${network.activate([1, 6])}`);
+
+console.log(network);
