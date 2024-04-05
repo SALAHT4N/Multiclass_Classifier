@@ -12,7 +12,7 @@ export abstract class Neuron {
     threshold: number
   ): number {
     const netValue =
-      weights.reduce((sum, weight, i) => sum + weight * inputs[i], 0) +
+      weights.reduce((sum, weight, i) => sum + weight * inputs[i], 0) -
       threshold;
     return netValue;
   }

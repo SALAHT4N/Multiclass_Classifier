@@ -7,16 +7,24 @@ export function sigmoidDerivative(x: number) {
   return sig * (1 - sig);
 }
 
-export function softmax(x: number, y: number[]): number {
-  const allValues = [x, ...y];
-  const maxInput = Math.max(...allValues);
-  const expValues = allValues.map((value) => Math.exp(value - maxInput));
-  const sumExps = expValues.reduce((sum, value) => sum + value, 0);
-  return Math.exp(x - maxInput) / sumExps;
+export function linear(x: number): number {
+  return x;
 }
 
-export function softmaxDerivative(i: number, values: number[]): number {
-  const softmaxValues = values.map((value) => softmax(value, values));
+export function linearDerivative(x: number) {
+  return 1;
+}
+
+export function softmax(inputs: number[]): number[] {
+  const maxInput = Math.max(...inputs);
+  const exps = inputs.map((value) => Math.exp(value - maxInput));
+  const sumExps = exps.reduce((sum, value) => sum + value, 0);
+  return exps.map((value) => value / sumExps);
+}
+
+export function softmaxDerivative(value: number, values: number[]): number {
+  const softmaxValues = softmax(values);
+  const i = values.findIndex((num) => num === value);
   const derivative = softmaxValues[i] * (1 - softmaxValues[i]);
 
   return derivative;

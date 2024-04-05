@@ -13,7 +13,6 @@ export function gradientDescent(dataset: number[][], network: Network): void {
   if (network.outputLayer === null) {
     throw new Error("Output layer not set");
   }
-
   logWeightsToConsole(network, "Before");
 
   for (let labeledInput of dataset) {
@@ -82,11 +81,11 @@ function logWeightsToConsole(network: Network, phase: "Before" | "After") {
   console.log(`${phase} learning`);
   console.log("Weights for each layer:");
   console.log("Output: ");
-  console.log(network.outputLayer?.weightMatrix);
+  console.log(JSON.parse(JSON.stringify(network.outputLayer?.weightMatrix)));
 
   network.hiddenLayers.forEach((layer, i) => {
     console.log(`Hidden layer ${i}`);
-    console.log(layer.weightMatrix);
+    console.log(JSON.parse(JSON.stringify(layer.weightMatrix)));
   });
 }
 function debug(weights: number[][]): boolean {

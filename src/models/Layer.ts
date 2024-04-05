@@ -6,12 +6,13 @@ import { HiddenNeuron, Neuron, OutputNeuron } from "./Neuron";
 
 export abstract class Layer {
   neurons: Neuron[] = [];
-  activationFunction: MathematicalFunction;
-  derivativeOfActivation: MathematicalFunction;
+  activationFunction: any;
+  derivativeOfActivation: any;
   gradients: number[] = [];
   weightMatrix: number[][] = [];
   thresholds: number[] = [];
   inputs: number[] = [];
+  preActivations: number[] = [];
 
   constructor(
     activationFunction: MathematicalFunction,
@@ -29,11 +30,11 @@ export abstract class Layer {
   public activate(layerInput: number[]): number[] {
     this.inputs = layerInput;
 
-    return this.neurons.map((neuron, i) =>
-      this.activationFunction(
-        neuron.activate(layerInput, this.weightMatrix[i], this.thresholds[i])
-      )
+    this.preActivations = this.neurons.map((neuron, i) =>
+      neuron.activate(layerInput, this.weightMatrix[i], this.thresholds[i])
     );
+
+    return this.preActivations.map((preAct) => this.activationFunction(preAct));
   }
 
   /**
@@ -54,7 +55,7 @@ export abstract class Layer {
 
     const D = new Matrix([this.thresholds]);
 
-    this.thresholds = Matrix.add(C, D).to1DArray();
+    this.thresholds = Matrix.subtract(C, D).to1DArray();
   }
 
   /**
@@ -98,7 +99,7 @@ export class HiddenLayer extends Layer {
     alpha: number
   ): NeuronAdjustment[] {
     return this.neurons.map((_neuron, j) => {
-      const gradient = this.derivativeOfActivation(outputs[j]);
+      const gradient = this.derivativeOfActivation(this.preActivations[j]);
 
       this.gradients.push(gradient);
 
@@ -113,7 +114,7 @@ export class HiddenLayer extends Layer {
         return alpha * gradientError * input;
       });
 
-      const thresholdAdjustment = this.thresholds[j] * alpha * gradientError;
+      const thresholdAdjustment = -1 * alpha * gradientError;
 
       return { weightAdjustments, thresholdAdjustment } as NeuronAdjustment;
     });
@@ -141,6 +142,16 @@ export class OutputLayer extends Layer {
     }
   }
 
+  public activate(layerInput: number[]): number[] {
+    this.inputs = layerInput;
+
+    const preActivations = this.neurons.map((neuron, i) =>
+      neuron.activate(layerInput, this.weightMatrix[i], this.thresholds[i])
+    );
+    this.preActivations = preActivations;
+    return this.activationFunction(preActivations);
+  }
+
   /**
    * This method triggers the learning process for this layer
    * @param desiredOutput output portion of one data sample
@@ -154,9 +165,10 @@ export class OutputLayer extends Layer {
        */
       const error = desiredOutput[i] - this.outputs[i];
 
-      const gradient = this.derivativeOfActivation(this.outputs[i]);
-
-      //const gradient = softmaxDerivative(i, this.outputs);
+      const gradient = this.derivativeOfActivation(
+        this.preActivations[i],
+        this.preActivations
+      );
 
       this.gradients.push(gradient);
       const gradientError = error * gradient;
@@ -165,7 +177,7 @@ export class OutputLayer extends Layer {
         weightAdjustments: this.inputs.map(
           (input) => gradientError * alpha * input
         ),
-        thresholdAdjustment: gradientError * alpha * this.thresholds[i],
+        thresholdAdjustment: gradientError * alpha * -1,
       } as NeuronAdjustment;
     });
   }

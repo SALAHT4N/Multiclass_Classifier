@@ -24,8 +24,8 @@ export class NetworkBuilder {
   }
 
   public setOutputLayer(
-    activationFunction: MathematicalFunction,
-    derivativeOfActivation: MathematicalFunction,
+    activationFunction: any,
+    derivativeOfActivation: any,
     numOfNeurons: number
   ): Network {
     let layer = new OutputLayer(activationFunction, derivativeOfActivation);

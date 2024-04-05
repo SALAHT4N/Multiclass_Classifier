@@ -116,15 +116,17 @@ export class Network {
     let outputs = input;
 
     for (let i = 0; i < allLayers.length; i++) {
+      //console.log(`input of layer ${i} = ${outputs}`);
       outputs = allLayers[i].activate(outputs);
+      //console.log(`output of layer ${i} = ${outputs}`);
     }
     this.outputLayer.outputs = outputs;
     return outputs;
   }
 
   public update(allAdjustments: NeuronAdjustment[][]): void {
-    [this.outputLayer!, ...this.hiddenLayers].forEach((layer, i) =>
-      layer.update(allAdjustments[i])
+    [this.outputLayer!, ...[...this.hiddenLayers].reverse()].forEach(
+      (layer, i) => layer.update(allAdjustments[i])
     );
   }
 
