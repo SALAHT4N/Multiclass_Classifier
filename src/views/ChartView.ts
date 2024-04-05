@@ -41,6 +41,16 @@ export class ChartView {
     this._chart?.update();
   }
 
+  public removeDataset(label: string) {
+    const newDataset = this._chart?.data.datasets.filter(
+      (ds) => ds.label != label
+    );
+    if (!newDataset) return;
+    if (this._chart) this._chart.data.datasets = newDataset;
+
+    this._chart?.update();
+  }
+
   _initChart(): void {
     const config = {
       type: "scatter" as const,
